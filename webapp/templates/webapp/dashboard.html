@@ -1,0 +1,428 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block page_title %}Damla Vize CRM{% endblock %}
+
+{% block content %}
+<!-- Welcome Header -->
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Hoş Geldiniz</h1>
+        <p class="text-gray-600">Yönetim panelinize genel bir bakış</p>
+    </div>
+    <!-- Data Ver Button -->
+    <button onclick="showDataVerModal()" class="flex items-center space-x-2 bg-bordo hover:bg-bordo-dark text-white px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+        <i class="fas fa-database"></i>
+        <span class="font-medium">Data Ver</span>
+    </button>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <!-- Stats Card 1 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Toplam Müşteri</p>
+                <p id="totalCustomers" class="text-2xl font-bold text-gray-800 mt-1">0</p>
+            </div>
+            <div class="p-3 rounded-full bg-yellow-50 text-bordo">
+                <i class="fas fa-users text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Card 2 -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-300">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Bugünkü Randevular</p>
+                <p id="todayAppointments" class="text-2xl font-bold text-gray-800 mt-1">0</p>
+            </div>
+            <div class="p-3 rounded-full bg-yellow-50 text-bordo">
+                <i class="fas fa-calendar-check text-xl"></i>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+
+<!-- Main Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Data Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 group relative">
+        <div class="p-5 cursor-pointer">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-database text-bordo mr-2"></i>
+                <span>Data Yönetimi</span>
+            </h3>
+        </div>
+        <div class="hidden group-hover:block absolute top-full left-0 w-full bg-white border border-gray-100 rounded-b-xl shadow-xl z-50 mt-0">
+            <div class="divide-y divide-gray-100">
+                <a href="{% url 'webapp:existing_data' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-2 rounded-lg bg-yellow-50 text-bordo">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">Mevcut Data</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                <a href="{% url 'webapp:add_data' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-2 rounded-lg bg-yellow-50 text-bordo">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">Yeni Data Ekle</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                <a href="{% url 'webapp:not_interested' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-2 rounded-lg bg-red-50 text-red-600">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">İstemeyen Müşteriler</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                <a href="{% url 'webapp:customers' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-2 rounded-lg bg-yellow-50 text-bordo">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">Satış Yapılan Müşteriler</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Operations Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 group relative">
+        <div class="p-5 cursor-pointer">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-tasks text-bordo mr-2"></i>
+                <span>Operasyonlar</span>
+            </h3>
+        </div>
+        <div class="hidden group-hover:block absolute top-full left-0 w-full bg-white border border-gray-100 rounded-b-xl shadow-xl z-50 mt-0">
+            <div class="divide-y divide-gray-100">
+                <a href="{% url 'webapp:calendar' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-2 rounded-lg bg-yellow-50 text-bordo">
+                            <i class="fas fa-calendar-days"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">Randevu Takvimi</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+                <a href="{% url 'webapp:document_tracking' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-2 rounded-lg bg-yellow-50 text-bordo">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <span class="font-medium text-gray-700">Evrak Takip Sistemi</span>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Footer -->
+<footer class="mt-12 py-6 border-t border-gray-100">
+    <div class="text-center text-sm text-gray-500">
+        <p> 2025 Damla Vize Danışmanlık Turizm LTD. ŞTİ. Tüm hakları saklıdır.</p>
+        <p class="mt-1 text-xs text-gray-400">v1.0.0 | <a href="#" class="hover:text-bordo transition-colors">Developed by</a> • <a href="#" class="hover:text-bordo transition-colors">Bora Martin</a></p>
+        <div class="mt-4">
+            <img src="{% static 'images/transparent-Photoroom.png' %}" alt="Damla Vize Logo" class="h-64 mx-auto">
+        </div>
+    </div>
+</footer>
+
+<!-- Data Ver Modal -->
+<div id="dataVerModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-10 mx-auto p-5 border w-4/5 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">⏰ Data Ver - Ertelenen Müşteriler</h3>
+                <div class="text-sm text-gray-600 mt-1">
+                    Bugün ertelenmiş ve süresi geçmiş müşteriler öncelikli gösterilir
+                </div>
+                <button onclick="closeDataVerModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-gray-600">Toplam <span id="postponedCount" class="font-semibold text-orange-600">0</span> ertelenen müşteri</span>
+                    <button onclick="refreshPostponedList()" class="text-orange-600 hover:text-orange-700 text-sm">
+                        <i class="fas fa-sync-alt mr-1"></i>Yenile
+                    </button>
+                </div>
+            </div>
+            
+            <div id="postponedCustomersContainer" class="max-h-96 overflow-y-auto">
+                <div id="noPostponedMessage" class="text-center py-8">
+                    <i class="fas fa-clock text-gray-300 text-4xl mb-3"></i>
+                    <p class="text-gray-500">Ertelenmiş müşteri bulunmuyor.</p>
+                </div>
+                <div id="postponedList" class="hidden space-y-3">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+            
+            <div class="flex justify-end mt-4">
+                <button onclick="closeDataVerModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                    Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data Ver modal fonksiyonları
+    function showDataVerModal() {
+        document.getElementById('dataVerModal').classList.remove('hidden');
+        loadPostponedCustomers();
+        // Modal açıldığında badge'i güncelle
+        setTimeout(updatePostponedCount, 100);
+    }
+    
+    function closeDataVerModal() {
+        document.getElementById('dataVerModal').classList.add('hidden');
+        // Modal kapandığında badge'i güncelle
+        setTimeout(updatePostponedCount, 100);
+    }
+    
+    function loadPostponedCustomers() {
+        const postponedData = localStorage.getItem('postponedCustomers');
+        const allPostponed = postponedData ? JSON.parse(postponedData) : [];
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        
+        // Bugün ertelenmiş ve süresi geçmiş müşterileri öne çıkar
+        const todaysPostponed = allPostponed.filter(customer => {
+            const postponeDate = new Date(customer.postponeDateTime);
+            return postponeDate >= today && postponeDate < tomorrow;
+        });
+        
+        const overduePostponed = allPostponed.filter(customer => {
+            const postponeDate = new Date(customer.postponeDateTime);
+            return postponeDate < today;
+        });
+        
+        const futurePostponed = allPostponed.filter(customer => {
+            const postponeDate = new Date(customer.postponeDateTime);
+            return postponeDate >= tomorrow;
+        });
+        
+        // Bugün ertelenmişler en başta, süresi geçmişler sonra, gelecektekiler sonda
+        const sortedPostponed = [...todaysPostponed, ...overduePostponed, ...futurePostponed];
+        
+        document.getElementById('postponedCount').textContent = sortedPostponed.length;
+        
+        const container = document.getElementById('postponedCustomersContainer');
+        const noDataMsg = document.getElementById('noPostponedMessage');
+        const list = document.getElementById('postponedList');
+        
+        if (sortedPostponed.length === 0) {
+            noDataMsg.classList.remove('hidden');
+            list.classList.add('hidden');
+            return;
+        }
+        
+        noDataMsg.classList.add('hidden');
+        list.classList.remove('hidden');
+        
+        list.innerHTML = sortedPostponed.map(customer => {
+            const postponeDate = new Date(customer.postponeDateTime);
+            const isOverdue = postponeDate < today;
+            const isToday = postponeDate >= today && postponeDate < tomorrow;
+            
+            return `
+                <div class="border border-gray-200 rounded-lg p-4 ${isOverdue ? 'bg-red-50 border-red-200' : isToday ? 'bg-orange-50 border-orange-200' : 'bg-white'} cursor-pointer hover:shadow-md transition-shadow" onclick="window.location.href='/existing-data/customer-detail/?id=${customer.id}'">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 ${isOverdue ? 'bg-red-600' : isToday ? 'bg-orange-600' : 'bg-gray-600'} text-white rounded-full flex items-center justify-center font-semibold">
+                                    ${customer.name ? customer.name.charAt(0).toUpperCase() : '?'}
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">${customer.name || 'İsimsiz'}</h4>
+                                    <p class="text-sm text-gray-600">${customer.phone || '-'}</p>
+                                    ${isToday ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">BUGÜN</span>' : ''}
+                                    ${isOverdue ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">SÜRESİ GEÇMİŞ</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="mt-2 ml-13">
+                                <p class="text-sm text-gray-700">
+                                    <i class="fas fa-clock ${isOverdue ? 'text-red-500' : 'text-orange-500'} mr-1"></i>
+                                    <span class="font-medium">Hatırlanma:</span> 
+                                    ${postponeDate.toLocaleDateString('tr-TR')} ${postponeDate.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}
+                                </p>
+                                ${customer.postponeNote ? `
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <i class="fas fa-sticky-note text-gray-400 mr-1"></i>
+                                    ${customer.postponeNote}
+                                </p>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="restorePostponedCustomer('${customer.id}')" class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-undo mr-1"></i>
+                                Mevcut Data'ya Al
+                            </button>
+                            <button onclick="deletePostponedCustomer('${customer.id}')" class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors">
+                                <i class="fas fa-trash mr-1"></i>
+                                Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function restorePostponedCustomer(customerId) {
+        if (!confirm('Bu müşteriyi "Mevcut Data" listesine geri almak istediğinizden emin misiniz?')) {
+            return;
+        }
+        
+        // postponedCustomers'dan bul
+        const postponedData = localStorage.getItem('postponedCustomers');
+        const allPostponed = postponedData ? JSON.parse(postponedData) : [];
+        const customer = allPostponed.find(c => c.id === customerId);
+        
+        if (!customer) return;
+        
+        // postponedCustomers'dan çıkar
+        const filteredPostponed = allPostponed.filter(c => c.id !== customerId);
+        localStorage.setItem('postponedCustomers', JSON.stringify(filteredPostponed));
+        
+        // rawData'ya geri ekle
+        const rawData = localStorage.getItem('rawData');
+        const allRawData = rawData ? JSON.parse(rawData) : [];
+        const restoredCustomer = { ...customer };
+        delete restoredCustomer.postponeDateTime;
+        delete restoredCustomer.postponeNote;
+        delete restoredCustomer.postponedAt;
+        allRawData.push(restoredCustomer);
+        localStorage.setItem('rawData', JSON.stringify(allRawData));
+        
+        alert('Müşteri "Mevcut Data" listesine geri alındı.');
+        loadPostponedCustomers();
+        updatePostponedCount(); // Badge'i güncelle
+    }
+    
+    function deletePostponedCustomer(customerId) {
+        if (!confirm('Bu müşteriyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) return;
+        
+        const postponedData = localStorage.getItem('postponedCustomers');
+        const allPostponed = postponedData ? JSON.parse(postponedData) : [];
+        const filteredPostponed = allPostponed.filter(c => c.id !== customerId);
+        localStorage.setItem('postponedCustomers', JSON.stringify(filteredPostponed));
+        
+        alert('Müşteri silindi.');
+        loadPostponedCustomers();
+        updatePostponedCount(); // Badge'i güncelle
+    }
+    
+    function refreshPostponedList() {
+        loadPostponedCustomers();
+    }
+    
+    // Ertelenen müşteri sayısını güncelle
+    function updatePostponedCount() {
+        const postponedData = localStorage.getItem('postponedCustomers');
+        const allPostponed = postponedData ? JSON.parse(postponedData) : [];
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        
+        // Bugün ertelenmiş ve süresi geçmiş müşteri sayısı
+        const todaysPostponed = allPostponed.filter(customer => {
+            const postponeDate = new Date(customer.postponeDateTime);
+            return postponeDate < tomorrow;
+        });
+        
+        // Data Ver butonunun yanına badge ekle
+        const dataVerBtn = document.querySelector('[onclick="showDataVerModal()"]');
+        if (dataVerBtn) {
+            // Mevcut badge'i kaldır
+            const existingBadge = dataVerBtn.querySelector('.postponed-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            
+            // Yeni badge ekle
+            if (todaysPostponed.length > 0) {
+                const badge = document.createElement('span');
+                badge.className = 'postponed-badge inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full ml-2';
+                badge.textContent = todaysPostponed.length;
+                dataVerBtn.appendChild(badge);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Müşteri sayısını güncelle
+        const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+        console.log('Toplam müşteri sayısı:', customers); // Debug için
+        document.getElementById('totalCustomers').textContent = customers.length;
+
+        // Bugünkü randevuları güncelle
+        const today = new Date();
+        // Tarihi GG.AA.YYYY formatına çevir (Türkiye formatı, nokta ile)
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        const todayStr = `${day}.${month}.${year}`;
+        console.log('Bugünün tarihi (GG.AA.YYYY):', todayStr);
+        console.log('Bugün:', { day, month, year, todayStr });
+        
+        const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        console.log('Tüm randevular:', appointments);
+        console.log('Randevu sayısı:', appointments.length);
+        
+        const todayAppointments = appointments.filter(apt => {
+            console.log('Randevu işleniyor:', apt);
+            console.log('Randevu datetime:', apt.datetime);
+            console.log('Randevu datetime tipi:', typeof apt.datetime);
+            
+            if (!apt.datetime) {
+                console.log('Randevu datetime yok');
+                return false;
+            }
+            
+            // ISO datetime formatından tarihi çıkar ve GG.AA.YYYY formatına çevir
+            const aptDate = new Date(apt.datetime);
+            const aptDay = String(aptDate.getDate()).padStart(2, '0');
+            const aptMonth = String(aptDate.getMonth() + 1).padStart(2, '0');
+            const aptYear = aptDate.getFullYear();
+            const aptDateStr = `${aptDay}.${aptMonth}.${aptYear}`;
+            
+            console.log('Date nesnesi karşılaştırma:', aptDateStr, '===', todayStr, '=', aptDateStr === todayStr);
+            return aptDateStr === todayStr;
+        });
+        
+        console.log('Bugünkü randevular:', todayAppointments);
+        document.getElementById('todayAppointments').textContent = todayAppointments.length;
+        
+        // Ertelenen müşteri sayısını güncelle
+        updatePostponedCount();
+    });
+</script>
+{% endblock %}

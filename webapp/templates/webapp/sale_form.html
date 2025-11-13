@@ -1,0 +1,244 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}Satış Formu - Damla Vize CRM{% endblock %}
+
+{% block page_title %}Satış Formu{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <a href="#" onclick="window.history.back()" class="flex items-center text-bordo hover:text-bordo-dark">
+        <i class="fas fa-arrow-left mr-2"></i>
+        <span>Geri Dön</span>
+    </a>
+    <button id="saveSaleBtn" onclick="saveSale()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+        <i class="fas fa-save mr-2"></i>
+        Satışı Kaydet
+    </button>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- Müşteri Bilgileri -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-user text-bordo mr-2"></i>
+            Müşteri Bilgileri
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">İsim</label>
+                <input type="text" id="customerName" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                <input type="tel" id="customerPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" id="customerEmail" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ülke</label>
+                <input type="text" id="customerCountry" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" readonly>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALINAN HİZMET -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-concierge-bell text-bordo mr-2"></i>
+            ALINAN HİZMET
+        </h3>
+        
+        <div class="space-y-4">
+            <!-- Vize Türü -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Vize Türü *</label>
+                <select id="visaType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                    <option value="">Seçiniz...</option>
+                    <option value="schengen">Schengen Vizesi</option>
+                    <option value="amerika">Amerika Vizesi</option>
+                    <option value="ingiltere">İngiltere Vizesi</option>
+                    <option value="kanada">Kanada Vizesi</option>
+                </select>
+            </div>
+
+            <!-- Hizmet Detayları -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hizmet Detayları</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <label class="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" id="service1" class="w-4 h-4 text-bordo focus:ring-bordo">
+                        <span class="text-sm text-gray-700">Danışmanlık Hizmeti</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" id="service2" class="w-4 h-4 text-bordo focus:ring-bordo">
+                        <span class="text-sm text-gray-700">Vize Başvuru Formu Doldurma</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" id="service3" class="w-4 h-4 text-bordo focus:ring-bordo">
+                        <span class="text-sm text-gray-700">Randevu Alımı</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" id="service4" class="w-4 h-4 text-bordo focus:ring-bordo">
+                        <span class="text-sm text-gray-700">Belge Kontrolü</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Kişi Sayısı -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kişi Sayısı *</label>
+                <input type="number" id="personCount" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+            </div>
+
+            <!-- Ücret Bilgisi -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Toplam Ücret (TL) *</label>
+                <input type="number" id="totalAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo" placeholder="0.00">
+            </div>
+
+            <!-- Ödeme Durumu -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Durumu *</label>
+                <select id="paymentStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                    <option value="">Seçiniz...</option>
+                    <option value="odendi">Ödendi</option>
+                    <option value="kapora">Kapora Alındı</option>
+                    <option value="odenmedi">Ödenmedi</option>
+                    <option value="taksit">Taksitli</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ek Notlar -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-sticky-note text-bordo mr-2"></i>
+            Ek Notlar
+        </h3>
+        <textarea id="saleNotes" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo" placeholder="Satış hakkında ek notlar..."></textarea>
+    </div>
+</div>
+
+<script>
+    let customerId = null;
+    let customerData = null;
+    let isSaving = false;
+
+    // URL'den müşteri ID'sini al
+    function getCustomerIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // Müşteri verilerini yükle
+    function loadCustomer() {
+        customerId = getCustomerIdFromUrl();
+        if (!customerId) {
+            alert('Müşteri bulunamadı.');
+            window.history.back();
+            return;
+        }
+
+        const rawData = localStorage.getItem('rawData');
+        const allData = rawData ? JSON.parse(rawData) : [];
+        customerData = allData.find(c => c.id === customerId);
+
+        if (!customerData) {
+            alert('Müşteri bulunamadı.');
+            window.history.back();
+            return;
+        }
+
+        // Müşteri bilgilerini göster
+        document.getElementById('customerName').value = customerData.name || '';
+        document.getElementById('customerPhone').value = customerData.phone || '';
+        document.getElementById('customerEmail').value = customerData.email || '';
+        document.getElementById('customerCountry').value = customerData.country || '';
+    }
+
+    // Satışı kaydet
+    function saveSale() {
+        // Validasyon
+        const visaType = document.getElementById('visaType').value;
+        const personCount = document.getElementById('personCount').value;
+        const totalAmount = document.getElementById('totalAmount').value;
+        const paymentStatus = document.getElementById('paymentStatus').value;
+
+        if (!visaType) {
+            alert('Vize türü seçiniz.');
+            return;
+        }
+        if (!personCount || personCount < 1) {
+            alert('Geçerli kişi sayısı giriniz.');
+            return;
+        }
+        if (!totalAmount || totalAmount < 0) {
+            alert('Geçerli ücret giriniz.');
+            return;
+        }
+        if (!paymentStatus) {
+            alert('Ödeme durumunu seçiniz.');
+            return;
+        }
+
+        // Cift tiklamayi engelle
+        if (isSaving) return;
+        isSaving = true;
+        const btn = document.getElementById('saveSaleBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Kaydediliyor...';
+        }
+
+        // Hizmetleri topla
+        const services = [];
+        if (document.getElementById('service1').checked) services.push('Danışmanlık Hizmeti');
+        if (document.getElementById('service2').checked) services.push('Vize Başvuru Formu Doldurma');
+        if (document.getElementById('service3').checked) services.push('Randevu Alımı');
+        if (document.getElementById('service4').checked) services.push('Belge Kontrolü');
+
+        // Satış verisi oluştur
+        const saleData = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            customerId: customerId,
+            customerName: customerData.name,
+            customerPhone: customerData.phone,
+            customerEmail: customerData.email,
+            customerCountry: customerData.country,
+            visaType: visaType,
+            services: services,
+            personCount: parseInt(personCount),
+            totalAmount: parseFloat(totalAmount),
+            paymentStatus: paymentStatus,
+            saleNotes: document.getElementById('saleNotes').value.trim(),
+            saleDate: new Date().toISOString(),
+            ...customerData // Diğer tüm müşteri bilgilerini de taşı
+        };
+
+        // Satış yapılan müşterilere ekle
+        const customersData = localStorage.getItem('customers');
+        const allCustomers = customersData ? JSON.parse(customersData) : [];
+        allCustomers.push(saleData);
+        localStorage.setItem('customers', JSON.stringify(allCustomers));
+
+        // rawData'dan çıkar
+        const rawData = localStorage.getItem('rawData');
+        const allRawData = rawData ? JSON.parse(rawData) : [];
+        const filteredRawData = allRawData.filter(c => c.id !== customerId);
+        localStorage.setItem('rawData', JSON.stringify(filteredRawData));
+
+        alert('Satış başarıyla kaydedildi!');
+        window.location.href = "{% url 'webapp:customers' %}";
+    }
+
+    // Sayfa yüklendiğinde
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCustomer();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Damla Vize CRM{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bordo': '#A18E62',
+                        'bordo-dark': '#8A7A50',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    {% if not request.user.is_authenticated %}
+    <script>
+        // Django oturumu yoksa login'e yönlendir
+        window.location.href = '/login/';
+    </script>
+    {% endif %}
+    <!-- Top Navbar -->
+    <nav class="w-full bg-bordo text-white shadow">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="h-14 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <span class="font-semibold tracking-wide">DAMLA VİZE</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="hidden sm:inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/30 hover:bg-white/40 text-white transition transform hover:-translate-y-0.5 hover:rotate-6" title="Ayarlar" onclick="toggleSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="relative" onclick="toggleNotifications()">
+                        <i class="far fa-bell"></i>
+                        <span id="notificationBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-white/30 flex items-center justify-center">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div class="leading-tight hidden sm:block">
+                            <div class="text-sm" id="currentUserName">Ramazan</div>
+                            <div class="text-xs opacity-90">Yönetici</div>
+                        </div>
+                        <button onclick="logout()" class="ml-3 text-white hover:text-gray-200" title="Çıkış Yap">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page container -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <header class="mb-4">
+            <h1 class="text-xl font-semibold">{% block page_title %}Dashboard{% endblock %}</h1>
+        </header>
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Ayar Paneli -->
+    <div id="settingsPanel" class="hidden fixed top-14 right-4 w-64 bg-white rounded-lg shadow-xl z-50 overflow-hidden">
+        <div class="p-4 border-b border-gray-200">
+            <h3 class="font-semibold text-gray-900">Ayarlar</h3>
+        </div>
+        <div class="p-4">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tema Seçimi</label>
+                <div class="space-y-2">
+                    <button onclick="setTheme('default')" class="w-full text-left px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-between group">
+                        <span class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-blue-500 mr-2"></span>
+                            Varsayılan
+                        </span>
+                        <i class="fas fa-check text-green-500 hidden" id="theme-default-check"></i>
+                    </button>
+                    <button onclick="setTheme('dark')" class="w-full text-left px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-between group">
+                        <span class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-gray-800 mr-2"></span>
+                            Koyu
+                        </span>
+                        <i class="fas fa-check text-green-500 hidden" id="theme-dark-check"></i>
+                    </button>
+                    <button onclick="setTheme('gold')" class="w-full text-left px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-between group">
+                        <span class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-yellow-600 mr-2"></span>
+                            Gold
+                        </span>
+                        <i class="fas fa-check text-green-500 hidden" id="theme-gold-check"></i>
+                    </button>
+                    <button onclick="setTheme('emerald')" class="w-full text-left px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-between group">
+                        <span class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-emerald-500 mr-2"></span>
+                            Zümrüt
+                        </span>
+                        <i class="fas fa-check text-green-500 hidden" id="theme-emerald-check"></i>
+                    </button>
+                    <button onclick="setTheme('ocean')" class="w-full text-left px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-between group">
+                        <span class="flex items-center">
+                            <span class="w-4 h-4 rounded-full mr-2" style="background: linear-gradient(135deg, #0ea5e9, #6366f1);"></span>
+                            Okyanus
+                        </span>
+                        <i class="fas fa-check text-green-500 hidden" id="theme-ocean-check"></i>
+                    </button>
+                    <button onclick="setTheme('crimson')" class="w-full text-left px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 flex items-center justify-between group">
+                        <span class="flex items-center">
+                            <span class="w-4 h-4 rounded-full bg-red-600 mr-2"></span>
+                            Kızıl
+                        </span>
+                        <i class="fas fa-check text-green-500 hidden" id="theme-crimson-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bildirim Paneli -->
+    <div id="notificationPanel" class="hidden fixed top-14 right-4 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+        <div class="p-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-gray-900">Bildirimler</h3>
+                <button onclick="clearAllNotifications()" class="text-sm text-red-600 hover:text-red-800">Temizle</button>
+            </div>
+        </div>
+        <div id="notificationList" class="max-h-80 overflow-y-auto">
+            <!-- Bildirimler JavaScript ile doldurulacak -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+        // Bildirim sistemi
+        let notifications = [];
+        
+        function getNotifications() {
+            const stored = localStorage.getItem('notifications');
+            return stored ? JSON.parse(stored) : [];
+        }
+        
+        function saveNotifications(notifications) {
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+        }
+        
+        function addNotification(title, message, type = 'appointment') {
+            const notification = {
+                id: Date.now().toString(),
+                title: title,
+                message: message,
+                type: type,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            notifications = getNotifications();
+            notifications.unshift(notification);
+            saveNotifications(notifications);
+            updateNotificationBadge();
+            updateNotificationList();
+            
+            // Browser bildirimi
+            if (Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: '/static/icon-192x192.png'
+                });
+            }
+        }
+        
+        function updateNotificationBadge() {
+            notifications = getNotifications();
+            const unreadCount = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notificationBadge');
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+        
+        function updateNotificationList() {
+            notifications = getNotifications();
+            const list = document.getElementById('notificationList');
+            
+            if (notifications.length === 0) {
+                list.innerHTML = '<div class="p-4 text-center text-gray-500">Bildirim bulunmuyor</div>';
+                return;
+            }
+            
+            list.innerHTML = notifications.map(notification => `
+                <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}" onclick="markAsRead('${notification.id}')">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}">${notification.title}</h4>
+                            <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
+                            <p class="text-xs text-gray-400 mt-2">${new Date(notification.timestamp).toLocaleString('tr-TR')}</p>
+                        </div>
+                        ${!notification.read ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function toggleNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            panel.classList.toggle('hidden');
+            
+            if (!panel.classList.contains('hidden')) {
+                updateNotificationList();
+            }
+        }
+        
+        function markAsRead(notificationId) {
+            notifications = getNotifications();
+            const index = notifications.findIndex(n => n.id === notificationId);
+            if (index !== -1) {
+                notifications[index].read = true;
+                saveNotifications(notifications);
+                updateNotificationBadge();
+                updateNotificationList();
+            }
+        }
+        
+        function clearAllNotifications() {
+            notifications = [];
+            saveNotifications(notifications);
+            updateNotificationBadge();
+            updateNotificationList();
+        }
+        
+        // Ayar paneli fonksiyonları
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            const notificationPanel = document.getElementById('notificationPanel');
+            
+            // Bildirim panelini kapat
+            notificationPanel.classList.add('hidden');
+            
+            // Ayar panelini aç/kapat
+            panel.classList.toggle('hidden');
+            
+            // Mevcut temayı işaretle
+            if (!panel.classList.contains('hidden')) {
+                updateThemeChecks();
+            }
+        }
+        
+        function setTheme(theme) {
+            localStorage.setItem('selectedTheme', theme);
+            
+            // Tema değişikliğini uygula
+            applyTheme(theme);
+            
+            // İşaretleri güncelle
+            updateThemeChecks();
+        }
+        
+        function applyTheme(theme) {
+            const navbar = document.querySelector('nav');
+            const themeConfig = {
+                'default': {
+                    navbarClass: 'w-full bg-bordo text-white shadow',
+                    navbarStyle: '',
+                    buttonPrimary: 'bg-bordo hover:bg-bordo-dark',
+                    buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                    textAccent: 'text-bordo hover:text-bordo-dark',
+                    iconAccent: 'text-bordo',
+                    focusRing: 'focus:ring-bordo focus:border-bordo'
+                },
+                'dark': {
+                    navbarClass: 'w-full bg-gray-900 text-white shadow',
+                    navbarStyle: '',
+                    buttonPrimary: 'bg-gray-800 hover:bg-gray-900',
+                    buttonSecondary: 'bg-gray-300 hover:bg-gray-400',
+                    textAccent: 'text-gray-800 hover:text-gray-900',
+                    iconAccent: 'text-gray-800',
+                    focusRing: 'focus:ring-gray-800 focus:border-gray-800'
+                },
+                'gold': {
+                    navbarClass: 'w-full bg-yellow-600 text-white shadow',
+                    navbarStyle: '',
+                    buttonPrimary: 'bg-yellow-600 hover:bg-yellow-700',
+                    buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                    textAccent: 'text-yellow-600 hover:text-yellow-700',
+                    iconAccent: 'text-yellow-600',
+                    focusRing: 'focus:ring-yellow-600 focus:border-yellow-600'
+                },
+                'emerald': {
+                    navbarClass: 'w-full bg-emerald-600 text-white shadow',
+                    navbarStyle: '',
+                    buttonPrimary: 'bg-emerald-600 hover:bg-emerald-700',
+                    buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                    textAccent: 'text-emerald-600 hover:text-emerald-700',
+                    iconAccent: 'text-emerald-600',
+                    focusRing: 'focus:ring-emerald-600 focus:border-emerald-600'
+                },
+                'ocean': {
+                    navbarClass: 'w-full text-white shadow',
+                    navbarStyle: 'background: linear-gradient(135deg, #0ea5e9, #6366f1);',
+                    buttonPrimary: 'text-white',
+                    buttonPrimaryStyle: 'background: linear-gradient(135deg, #0ea5e9, #6366f1);',
+                    buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                    textAccent: 'text-blue-600 hover:text-blue-700',
+                    iconAccent: 'text-blue-600',
+                    focusRing: 'focus:ring-blue-600 focus:border-blue-600'
+                },
+                'crimson': {
+                    navbarClass: 'w-full bg-rose-600 text-white shadow',
+                    navbarStyle: '',
+                    buttonPrimary: 'bg-rose-600 hover:bg-rose-700',
+                    buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                    textAccent: 'text-rose-600 hover:text-rose-700',
+                    iconAccent: 'text-rose-600',
+                    focusRing: 'focus:ring-rose-600 focus:border-rose-600'
+                }
+            };
+
+            const config = themeConfig[theme] || themeConfig['default'];
+            
+            // Navbar'ı güncelle
+            navbar.className = config.navbarClass;
+            if (config.navbarStyle) {
+                navbar.setAttribute('style', config.navbarStyle);
+            } else {
+                navbar.removeAttribute('style');
+            }
+
+            // Tüm butonları güncelle
+            updateAllButtonStyles(config);
+        }
+
+        function updateAllButtonStyles(config) {
+            // Ana butonlar (bg-bordo gibi)
+            document.querySelectorAll('[class*="bg-bordo"]').forEach(el => {
+                if (el.classList.contains('bg-bordo')) {
+                    el.classList.remove('bg-bordo', 'hover:bg-bordo-dark');
+                    if (config.buttonPrimaryStyle) {
+                        el.setAttribute('style', config.buttonPrimaryStyle);
+                        el.classList.add('text-white');
+                    } else {
+                        el.classList.add(...config.buttonPrimary.split(' '));
+                        el.removeAttribute('style');
+                    }
+                }
+            });
+
+            // İkincil butonlar
+            document.querySelectorAll('[class*="bg-gray-200"]').forEach(el => {
+                if (el.classList.contains('bg-gray-200') && el.classList.contains('hover:bg-gray-300')) {
+                    el.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+                    el.classList.add(...config.buttonSecondary.split(' '));
+                }
+            });
+
+            // Metin accent renkleri
+            document.querySelectorAll('[class*="text-bordo"]').forEach(el => {
+                if (el.classList.contains('text-bordo')) {
+                    el.classList.remove('text-bordo', 'hover:text-bordo-dark');
+                    el.classList.add(...config.textAccent.split(' '));
+                }
+            });
+
+            // İkon accent renkleri
+            document.querySelectorAll('[class*="text-bordo"]').forEach(el => {
+                if (el.tagName === 'I' && el.classList.contains('text-bordo')) {
+                    el.classList.remove('text-bordo');
+                    el.classList.add(...config.iconAccent.split(' '));
+                }
+            });
+
+            // Focus ring renkleri
+            document.querySelectorAll('[class*="focus:ring-bordo"]').forEach(el => {
+                el.classList.remove('focus:ring-bordo', 'focus:border-bordo');
+                el.classList.add(...config.focusRing.split(' '));
+            });
+        }
+        
+        function updateThemeChecks() {
+            const currentTheme = localStorage.getItem('selectedTheme') || 'default';
+            
+            // Tüm işaretleri gizle
+            document.querySelectorAll('[id^="theme-"][id$="-check"]').forEach(check => {
+                check.classList.add('hidden');
+            });
+            
+            // Mevcut temayı işaretle
+            const currentCheck = document.getElementById(`theme-${currentTheme}-check`);
+            if (currentCheck) {
+                currentCheck.classList.remove('hidden');
+            }
+        }
+        
+        // Sayfa yüklendiğinde temayı uygula
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('selectedTheme');
+            if (savedTheme) {
+                applyTheme(savedTheme);
+            }
+            updateThemeChecks();
+            
+            // Sayfa yüklendiğinde butonları da güncelle (tema varsa)
+            if (savedTheme) {
+                const themeConfig = {
+                    'default': {
+                        buttonPrimary: 'bg-bordo hover:bg-bordo-dark',
+                        buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                        textAccent: 'text-bordo hover:text-bordo-dark',
+                        iconAccent: 'text-bordo',
+                        focusRing: 'focus:ring-bordo focus:border-bordo'
+                    },
+                    'dark': {
+                        buttonPrimary: 'bg-gray-800 hover:bg-gray-900',
+                        buttonSecondary: 'bg-gray-300 hover:bg-gray-400',
+                        textAccent: 'text-gray-800 hover:text-gray-900',
+                        iconAccent: 'text-gray-800',
+                        focusRing: 'focus:ring-gray-800 focus:border-gray-800'
+                    },
+                    'gold': {
+                        buttonPrimary: 'bg-yellow-600 hover:bg-yellow-700',
+                        buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                        textAccent: 'text-yellow-600 hover:text-yellow-700',
+                        iconAccent: 'text-yellow-600',
+                        focusRing: 'focus:ring-yellow-600 focus:border-yellow-600'
+                    },
+                    'emerald': {
+                        buttonPrimary: 'bg-emerald-600 hover:bg-emerald-700',
+                        buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                        textAccent: 'text-emerald-600 hover:text-emerald-700',
+                        iconAccent: 'text-emerald-600',
+                        focusRing: 'focus:ring-emerald-600 focus:border-emerald-600'
+                    },
+                    'ocean': {
+                        buttonPrimary: 'text-white',
+                        buttonPrimaryStyle: 'background: linear-gradient(135deg, #0ea5e9, #6366f1);',
+                        buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                        textAccent: 'text-blue-600 hover:text-blue-700',
+                        iconAccent: 'text-blue-600',
+                        focusRing: 'focus:ring-blue-600 focus:border-blue-600'
+                    },
+                    'crimson': {
+                        buttonPrimary: 'bg-rose-600 hover:bg-rose-700',
+                        buttonSecondary: 'bg-gray-200 hover:bg-gray-300',
+                        textAccent: 'text-rose-600 hover:text-rose-700',
+                        iconAccent: 'text-rose-600',
+                        focusRing: 'focus:ring-rose-600 focus:border-rose-600'
+                    }
+                };
+                const config = themeConfig[savedTheme];
+                if (config) {
+                    updateAllButtonStyles(config);
+                }
+            }
+        });
+        
+        // Sayfa dışına tıklayınca bildirim panelini kapat
+        document.addEventListener('click', function(event) {
+            const notificationPanel = document.getElementById('notificationPanel');
+            const settingsPanel = document.getElementById('settingsPanel');
+            const bell = document.querySelector('button[onclick="toggleNotifications()"]');
+            const settings = document.querySelector('button[onclick="toggleSettings()"]');
+            
+            // Bildirim panelini kapat
+            if (!notificationPanel.contains(event.target) && !bell.contains(event.target)) {
+                notificationPanel.classList.add('hidden');
+            }
+            
+            // Ayar panelini kapat
+            if (!settingsPanel.contains(event.target) && !settings.contains(event.target)) {
+                settingsPanel.classList.add('hidden');
+            }
+        });
+        
+        // Bildirim izni iste
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        
+        // Çıkış fonksiyonu
+        function logout() {
+            if (confirm('Çıkış yapmak istediğinizden emin misiniz?')) {
+                // Mevcut kullaniciyi al
+                const username = localStorage.getItem('currentUser');
+
+                // Cikis oncesi kullaniciya ozel anahtarlara kaydet
+                if (username) {
+                    const dataKeys = [
+                        'customers',
+                        'rawData',
+                        'appointments',
+                        'postponedCustomers',
+                        'documentTracking',
+                        'notifications'
+                    ];
+                    try {
+                        dataKeys.forEach(k => {
+                            const val = localStorage.getItem(k);
+                            if (val !== null) {
+                                localStorage.setItem(`${k}_${username}`, val);
+                            }
+                        });
+                    } catch (err) {
+                        console.warn('Kullanıcı verileri kaydedilirken hata:', err);
+                    }
+                }
+
+                // Oturum ve arayuz anahtarlarini temizle
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('currentUser');
+                const keysToRemove = [
+                    'rememberMe',
+                    'selectedTheme',
+                    'notifications',
+                    'lastLoginTime'
+                ];
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+                window.location.href = '/logout/';
+            }
+        }
+        
+        // Sayfa yüklendiğinde badge'i güncelle ve kullanıcı adını göster
+        document.addEventListener('DOMContentLoaded', function() {
+            updateNotificationBadge();
+            
+            // Kullanıcı adını göster
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                const userNameElement = document.getElementById('currentUserName');
+                if (userNameElement) {
+                    userNameElement.textContent = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

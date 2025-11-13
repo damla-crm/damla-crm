@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: damla-crm
+    env: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py collectstatic --noinput
+      python manage.py migrate
+      python manage.py init_default_users
+    startCommand: gunicorn damla_crm.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        fromService: damla-crm
+        property: host
+      - key: CSRF_TRUSTED_ORIGINS
+        fromService: damla-crm
+        property: url
+    autoDeploy: true
+    healthCheckPath: /
+databases:
+  - name: damla-crm-db
+    plan: free

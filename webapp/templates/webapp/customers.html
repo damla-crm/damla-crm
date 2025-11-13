@@ -1,0 +1,670 @@
+{% extends 'webapp/base.html' %}
+
+{% block title %}Müşteriler - Damla Vize CRM{% endblock %}
+
+{% block page_title %}Müşteriler{% endblock %}
+
+{% block content %}
+<!-- Üst Bar -->
+<div class="flex justify-between items-center mb-4">
+    <a href="{% url 'webapp:dashboard' %}" class="flex items-center text-bordo hover:text-bordo-dark">
+        <i class="fas fa-arrow-left mr-2"></i>
+        <span>Geri Dön</span>
+    </a>
+    <button onclick="openAddCustomerModal()" class="bg-bordo text-white px-4 py-2 rounded-md hover:bg-bordo-dark transition-colors">
+        <i class="fas fa-plus mr-2"></i>
+        Yeni Müşteri Ekle
+    </button>
+</div>
+
+<!-- Müşteri Tablosu -->
+<div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="p-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900">Müşteri Listesi</h2>
+            <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2 bg-gray-50 border border-gray-200 rounded-md px-2 py-1">
+                    <label class="text-sm text-gray-600">Başlangıç:</label>
+                    <input type="date" id="startDate" class="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo">
+                    <span class="text-gray-400">-</span>
+                    <label class="text-sm text-gray-600">Bitiş:</label>
+                    <input type="date" id="endDate" class="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo">
+                    <button id="filterBtn" onclick="applyFilters()" class="bg-bordo text-white px-3 py-2 rounded-md hover:bg-bordo-dark flex items-center">
+                        <i class="fas fa-filter mr-1"></i> Filtrele
+                    </button>
+                </div>
+                <input type="text" id="searchInput" placeholder="Müşteri ara..." class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo">
+                <button onclick="applyFilters()" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-200">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('id')">
+                        ID <i class="fas fa-sort text-gray-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
+                        Ad Soyad <i class="fas fa-sort text-gray-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('phone')">
+                        Telefon <i class="fas fa-sort text-gray-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('email')">
+                        E-posta <i class="fas fa-sort text-gray-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('date')">
+                        Kayıt Tarihi <i class="fas fa-sort text-gray-400 ml-1"></i>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Vize Türü
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Toplam Ücret
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ödeme Durumu
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        İşlemler
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="customerTableBody" class="bg-white divide-y divide-gray-200">
+                <!-- Müşteri verileri JavaScript ile doldurulacak -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Boş Durum -->
+    <div id="emptyState" class="hidden text-center py-12">
+        <i class="fas fa-users text-gray-300 text-5xl mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Henüz müşteri yok</h3>
+        <p class="text-gray-500 mb-4">İlk müşterinizi eklemek için yukarıdaki butona tıklayın.</p>
+    </div>
+</div>
+
+<!-- Müşteri Ekleme/Düzenleme Modal -->
+<div id="customerModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 mb-4">Yeni Müşteri Ekle</h3>
+            <form id="customerForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad *</label>
+                    <input type="text" id="customerName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo" placeholder="Ad ve soyad girin" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Telefon *</label>
+                    <input type="tel" id="customerPhone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo" placeholder="+90 5XX XXX XX XX" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">E-posta *</label>
+                    <input type="email" id="customerEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo" placeholder="ornek@email.com" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Adres</label>
+                    <textarea id="customerAddress" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo" placeholder="Adres bilgileri..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notlar</label>
+                    <textarea id="customerNotes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo" placeholder="Müşteri notları..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Vize Türü</label>
+                    <select id="visaType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo">
+                        <option value="">Seçiniz</option>
+                        <option value="schengen">Schengen Vizesi</option>
+                        <option value="amerika">Amerika Vizesi</option>
+                        <option value="ingiltere">İngiltere Vizesi</option>
+                        <option value="kanada">Kanada Vizesi</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Toplam Ücret (TL)</label>
+                    <input type="number" id="totalAmount" min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo" placeholder="Örn: 2500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ödeme Durumu</label>
+                    <select id="paymentStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-bordo focus:border-bordo">
+                        <option value="">Seçiniz</option>
+                        <option value="odendi">Ödendi</option>
+                        <option value="kapora">Kapora</option>
+                        <option value="odenmedi">Ödenmedi</option>
+                        <option value="taksit">Taksitli</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeCustomerModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                        İptal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-bordo text-white rounded-md hover:bg-bordo-dark">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Müşteri Detay Modal -->
+<div id="customerDetailModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Müşteri Detayları</h3>
+            <div id="customerDetails" class="space-y-3">
+                <!-- Detaylar JavaScript ile doldurulacak -->
+            </div>
+            <div class="flex justify-end space-x-3 mt-4">
+                <button onclick="editCustomer()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <i class="fas fa-edit mr-2"></i>Düzenle
+                </button>
+                <button onclick="deleteCustomer()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                    <i class="fas fa-trash mr-2"></i>Sil
+                </button>
+                <button onclick="closeCustomerDetailModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                    Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let customers = [];
+    let currentCustomerId = null;
+    let sortField = 'id';
+    let sortDirection = 'asc';
+    
+    // Vize türü label fonksiyonu
+    function getVisaTypeLabel(visaType) {
+        const labels = {
+            'schengen': 'Schengen Vizesi',
+            'amerika': 'Amerika Vizesi',
+            'ingiltere': 'İngiltere Vizesi',
+            'kanada': 'Kanada Vizesi'
+        };
+        return labels[visaType] || visaType;
+    }
+    
+    // Ödeme durumu label fonksiyonu
+    function getPaymentStatusLabel(status) {
+        const labels = {
+            'odendi': 'Ödendi',
+            'kapora': 'Kapora',
+            'odenmedi': 'Ödenmedi',
+            'taksit': 'Taksitli'
+        };
+        return labels[status] || status;
+    }
+    
+    // Ödeme durumu class fonksiyonu
+    function getPaymentStatusClass(status) {
+        const classes = {
+            'odendi': 'bg-green-100 text-green-800',
+            'kapora': 'bg-yellow-100 text-yellow-800',
+            'odenmedi': 'bg-red-100 text-red-800',
+            'taksit': 'bg-blue-100 text-blue-800'
+        };
+        return classes[status] || 'bg-gray-100 text-gray-800';
+    }
+    
+    // Ödeme durumu icon fonksiyonu
+    function getPaymentStatusIcon(status) {
+        const icons = {
+            'odendi': '<i class="fas fa-check-circle mr-1"></i>',
+            'kapora': '<i class="fas fa-clock mr-1"></i>',
+            'odenmedi': '<i class="fas fa-times-circle mr-1"></i>',
+            'taksit': '<i class="fas fa-calendar-alt mr-1"></i>'
+        };
+        return icons[status] || '';
+    }
+    
+    // CSRF yardımcıları
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    function getCSRFToken() { return getCookie('csrftoken'); }
+
+    // Backend'den müşterileri al
+    async function getCustomers() {
+        try {
+            const resp = await fetch('/api/customers/', { credentials: 'same-origin' });
+            if (!resp.ok) throw new Error('Liste alınamadı');
+            const data = await resp.json();
+            return data;
+        } catch (e) {
+            console.error('Müşteri listesi alınırken hata:', e);
+            return [];
+        }
+    }
+    
+    // Artık LocalStorage kullanılmıyor; bu fonksiyon no-op
+    function saveCustomers(_) { /* no-op: data persisted on server */ }
+    
+    // Müşteri ekleme modalını aç
+    function openAddCustomerModal() {
+        currentCustomerId = null;
+        document.getElementById('modalTitle').textContent = 'Yeni Müşteri Ekle';
+        document.getElementById('customerForm').reset();
+        // Yeni alanları varsayılan değerlere getir
+        const visaSel = document.getElementById('visaType');
+        const totalInp = document.getElementById('totalAmount');
+        const paySel = document.getElementById('paymentStatus');
+        if (visaSel) visaSel.value = '';
+        if (totalInp) totalInp.value = '';
+        if (paySel) paySel.value = '';
+        document.getElementById('customerModal').classList.remove('hidden');
+    }
+    
+    // Müşteri düzenleme modalını aç
+    function openEditCustomerModal(customerId) {
+        currentCustomerId = customerId;
+        const customer = customers.find(c => c.id === customerId);
+        
+        if (customer) {
+            document.getElementById('modalTitle').textContent = 'Müşteri Düzenle';
+            document.getElementById('customerName').value = customer.name;
+            document.getElementById('customerPhone').value = customer.phone;
+            document.getElementById('customerEmail').value = customer.email;
+            document.getElementById('customerAddress').value = customer.address || '';
+            document.getElementById('customerNotes').value = customer.notes || '';
+            // Yeni alanlar
+            if (document.getElementById('visaType')) {
+                document.getElementById('visaType').value = customer.visaType || '';
+            }
+            if (document.getElementById('totalAmount')) {
+                document.getElementById('totalAmount').value = (customer.totalAmount ?? '')
+            }
+            if (document.getElementById('paymentStatus')) {
+                document.getElementById('paymentStatus').value = customer.paymentStatus || '';
+            }
+            document.getElementById('customerModal').classList.remove('hidden');
+        }
+    }
+    
+    // Müşteri modalını kapat
+    function closeCustomerModal() {
+        document.getElementById('customerModal').classList.add('hidden');
+        document.getElementById('customerForm').reset();
+        currentCustomerId = null;
+    }
+    
+    // Müşteri detay modalını aç
+    function openCustomerDetailModal(customerId) {
+        currentCustomerId = customerId;
+        const customer = customers.find(c => c.id === customerId);
+        
+        if (customer) {
+            const details = `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">ID:</span> <span class="text-gray-900">#${customer.id}</span>
+                </div>
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Ad Soyad:</span> <span class="text-gray-900">${customer.name}</span>
+                </div>
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Telefon:</span> <span class="text-gray-900">${customer.phone}</span>
+                </div>
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">E-posta:</span> <span class="text-gray-900">${customer.email}</span>
+                </div>
+                ${customer.country ? `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Başvuru Ülkesi:</span> <span class="text-gray-900">${customer.country}</span>
+                </div>
+                ` : ''}
+                ${customer.address ? `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Adres:</span> <span class="text-gray-900">${customer.address}</span>
+                </div>
+                ` : ''}
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Kayıt Tarihi:</span> <span class="text-gray-900">${new Date(customer.createdDate).toLocaleDateString('tr-TR')}</span>
+                </div>
+                ${customer.notes ? `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Notlar:</span> <span class="text-gray-900">${customer.notes}</span>
+                </div>
+                ` : ''}
+                ${customer.visaType || customer.services || customer.totalAmount || customer.paymentStatus ? `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600 block mb-2">📋 ALINAN HİZMET:</span>
+                    ${customer.visaType ? `
+                    <div class="ml-2 mb-1">
+                        <span class="font-medium">Vize Türü:</span> <span class="text-gray-900">${getVisaTypeLabel(customer.visaType)}</span>
+                    </div>
+                    ` : ''}
+                    ${customer.services && customer.services.length > 0 ? `
+                    <div class="ml-2 mb-1">
+                        <span class="font-medium">Hizmetler:</span>
+                        <ul class="mt-1">
+                            ${customer.services.map(service => `<li class="text-gray-900 ml-4">• ${service}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                    ${customer.personCount ? `
+                    <div class="ml-2 mb-1">
+                        <span class="font-medium">Kişi Sayısı:</span> <span class="text-gray-900">${customer.personCount}</span>
+                    </div>
+                    ` : ''}
+                    ${customer.totalAmount ? `
+                    <div class="ml-2 mb-1">
+                        <span class="font-medium">Toplam Ücret:</span> <span class="text-gray-900 font-semibold">${customer.totalAmount.toLocaleString('tr-TR')} TL</span>
+                    </div>
+                    ` : ''}
+                    ${customer.paymentStatus ? `
+                    <div class="ml-2 mb-1">
+                        <span class="font-medium">Ödeme Durumu:</span> 
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPaymentStatusClass(customer.paymentStatus)}">
+                            ${getPaymentStatusIcon(customer.paymentStatus)}
+                            ${getPaymentStatusLabel(customer.paymentStatus)}
+                        </span>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+                ${customer.saleNotes ? `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">💰 Satış Notları:</span> 
+                    <div class="mt-1 p-2 bg-green-50 rounded text-gray-900">${customer.saleNotes}</div>
+                </div>
+                ` : ''}
+                ${customer.saleDate ? `
+                <div class="border-b pb-2 mb-2">
+                    <span class="font-medium text-gray-600">Satış Tarihi:</span> <span class="text-gray-900">${new Date(customer.saleDate).toLocaleDateString('tr-TR')}</span>
+                </div>
+                ` : ''}
+                
+            `;
+            document.getElementById('customerDetails').innerHTML = details;
+            document.getElementById('customerDetailModal').classList.remove('hidden');
+        }
+    }
+    
+    // Müşteri detay modalını kapat
+    function closeCustomerDetailModal() {
+        document.getElementById('customerDetailModal').classList.add('hidden');
+        currentCustomerId = null;
+    }
+    
+    // Müşteri düzenle
+    function editCustomer() {
+        if (currentCustomerId) {
+            const customerId = currentCustomerId; // ID'yi sakla
+            closeCustomerDetailModal();
+            openEditCustomerModal(customerId);
+        }
+    }
+    
+    // Müşteri sil
+    function deleteCustomer() {
+        if (currentCustomerId && confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) {
+            customers = customers.filter(c => c.id !== currentCustomerId);
+            saveCustomers(customers);
+            removeDocumentTrackingForCustomer(currentCustomerId);
+            renderCustomerTable();
+            closeCustomerDetailModal();
+        }
+    }
+    
+    
+    
+    // Müşteri tablosunu render et
+    function renderCustomerTable() {
+        console.log('renderCustomerTable çağrıldı. customers:', customers); // Debug
+        const tbody = document.getElementById('customerTableBody');
+        const emptyState = document.getElementById('emptyState');
+        
+        console.log('customers.length:', customers.length); // Debug
+        
+        if (customers.length === 0) {
+            console.log('Müşteri yok, boş durum gösteriliyor'); // Debug
+            tbody.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        console.log('Müşteriler var, tablo dolduruluyor'); // Debug
+        emptyState.classList.add('hidden');
+        
+        console.log('Tablo HTML oluşturuluyor...'); // Debug
+        const tableHTML = customers.map(customer => {
+            console.log('İşlenen müşteri:', customer); // Debug
+            return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#${customer.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">${customer.name}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.phone}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${customer.email}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(customer.createdDate).toLocaleDateString('tr-TR')}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    ${customer.visaType ? `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <i class="fas fa-passport mr-1"></i>
+                            ${getVisaTypeLabel(customer.visaType)}
+                        </span>
+                    ` : '<span class="text-gray-400">-</span>'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    ${customer.totalAmount ? `${customer.totalAmount.toLocaleString('tr-TR')} TL` : '-'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    ${customer.paymentStatus ? `
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusClass(customer.paymentStatus)}">
+                            ${getPaymentStatusIcon(customer.paymentStatus)}
+                            ${getPaymentStatusLabel(customer.paymentStatus)}
+                        </span>
+                    ` : '<span class="text-gray-400">-</span>'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button onclick="goToDocumentTracking('${customer.id}')" class="text-purple-600 hover:text-purple-900 mr-3" title="Evrak Takibi">
+                        <i class="fas fa-file-circle-check"></i>
+                    </button>
+                    <button onclick="openCustomerDetailModal('${customer.id}')" class="text-bordo hover:text-bordo-dark mr-3">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button onclick="openEditCustomerModal('${customer.id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteCustomerQuick('${customer.id}')" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `}).join('');
+        
+        console.log('Tablo HTML oluşturuldu, tbody içine yerleştiriliyor'); // Debug
+        console.log('Oluşturulan HTML:', tableHTML); // Debug
+        tbody.innerHTML = tableHTML;
+        console.log('Tablo render tamamlandı'); // Debug
+    }
+    
+    // Hızlı müşteri silme (API)
+    async function deleteCustomerQuick(customerId) {
+        if (!confirm('Bu müşteriyi silmek istediğinizden emin misiniz?')) return;
+        try {
+            const resp = await fetch(`/api/customers/${customerId}/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                credentials: 'same-origin'
+            });
+            if (!resp.ok) throw new Error('Silme başarısız');
+            customers = customers.filter(c => c.id !== customerId);
+            renderCustomerTable();
+        } catch (e) {
+            alert('Silme sırasında hata oluştu');
+            console.error(e);
+        }
+    }
+
+    function goToDocumentTracking(customerId) {
+        localStorage.setItem('selectedDocumentCustomerId', customerId);
+        window.location.href = "{% url 'webapp:document_tracking' %}";
+    }
+
+    function removeDocumentTrackingForCustomer(customerId) {
+        const trackingRaw = localStorage.getItem('documentTracking');
+        if (!trackingRaw) return;
+        const tracking = JSON.parse(trackingRaw);
+        if (tracking[customerId]) {
+            delete tracking[customerId];
+            localStorage.setItem('documentTracking', JSON.stringify(tracking));
+        }
+    }
+    
+    // Sıralama
+    function sortTable(field) {
+        if (sortField === field) {
+            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            sortField = field;
+            sortDirection = 'asc';
+        }
+        
+        customers.sort((a, b) => {
+            let aVal = a[field];
+            let bVal = b[field];
+            
+            if (field === 'id') {
+                aVal = parseInt(aVal);
+                bVal = parseInt(bVal);
+            }
+            
+            if (sortDirection === 'asc') {
+                return aVal > bVal ? 1 : -1;
+            } else {
+                return aVal < bVal ? 1 : -1;
+            }
+        });
+        
+        renderCustomerTable();
+    }
+    
+    // Arama + Tarih filtreleme
+    function applyFilters() {
+        const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const startVal = document.getElementById('startDate')?.value;
+        const endVal = document.getElementById('endDate')?.value;
+        const all = getCustomers();
+
+        let startDate = null;
+        let endDate = null;
+        if (startVal) {
+            startDate = new Date(startVal);
+            startDate.setHours(0,0,0,0);
+        }
+        if (endVal) {
+            endDate = new Date(endVal);
+            endDate.setHours(23,59,59,999);
+        }
+
+        customers = all.filter(c => {
+            // Tarihe göre süz
+            const dateStr = c.saleDate || c.createdDate;
+            let inDate = true;
+            if (dateStr) {
+                const d = new Date(dateStr);
+                if (startDate && d < startDate) inDate = false;
+                if (endDate && d > endDate) inDate = false;
+            } else {
+                // Tarih yoksa dahil et
+                inDate = true;
+            }
+
+            // Aramaya göre süz
+            if (searchTerm) {
+                const match = (c.name || '').toLowerCase().includes(searchTerm) ||
+                              (c.phone || '').toLowerCase().includes(searchTerm) ||
+                              (c.email || '').toLowerCase().includes(searchTerm);
+                return inDate && match;
+            }
+            return inDate;
+        });
+
+        renderCustomerTable();
+    }
+
+    // Geriye uyumluluk: eski buton çağrısı
+    function searchCustomers() { applyFilters(); }
+    
+    // Form gönderimi
+    document.getElementById('customerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const payload = {
+            name: document.getElementById('customerName').value,
+            phone: document.getElementById('customerPhone').value,
+            email: document.getElementById('customerEmail').value,
+            address: document.getElementById('customerAddress').value,
+            notes: document.getElementById('customerNotes').value,
+            visaType: (document.getElementById('visaType')?.value || '').trim() || '',
+            totalAmount: (document.getElementById('totalAmount')?.value || '') || null,
+            paymentStatus: (document.getElementById('paymentStatus')?.value || '').trim() || '',
+        };
+
+        try {
+            let resp;
+            if (currentCustomerId) {
+                resp = await fetch(`/api/customers/${currentCustomerId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                resp = await fetch('/api/customers/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken(),
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
+            }
+            if (!resp.ok) throw new Error('Kaydetme başarısız');
+            // Listeyi tazele
+            customers = await getCustomers();
+            renderCustomerTable();
+            closeCustomerModal();
+        } catch (err) {
+            alert('Kaydetme sırasında hata oluştu');
+            console.error(err);
+        }
+    });
+    
+    // Sayfa yüklendiğinde
+    document.addEventListener('DOMContentLoaded', async function() {
+        customers = await getCustomers();
+        // Varsayılan tarih aralığı: son 30 gün
+        const end = new Date();
+        const start = new Date();
+        start.setDate(end.getDate() - 30);
+        const toInput = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        const startEl = document.getElementById('startDate');
+        const endEl = document.getElementById('endDate');
+        if (startEl && !startEl.value) startEl.value = toInput(start);
+        if (endEl && !endEl.value) endEl.value = toInput(end);
+
+        applyFilters();
+        
+        // Arama input için enter tuşu
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+    });
+</script>
+{% endblock %}

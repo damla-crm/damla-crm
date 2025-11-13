@@ -1,0 +1,296 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}Yeni Data Ekle - Damla Vize CRM{% endblock %}
+
+{% block page_title %}Yeni Data Ekle{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <a href="{% url 'webapp:dashboard' %}" class="flex items-center text-bordo hover:text-bordo-dark">
+        <i class="fas fa-arrow-left mr-2"></i>
+        <span>Gösterge Paneline Dön</span>
+    </a>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <!-- Upload Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6">
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <i class="fas fa-file-excel text-green-600 text-2xl"></i>
+            </div>
+            <h2 class="text-2xl font-semibold text-gray-900 mb-2">Excel Dosyası Yükle</h2>
+            <p class="text-gray-600">Excel dosyanızı seçin ve müşteri verilerini sisteme aktarın</p>
+        </div>
+
+        <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-bordo transition-colors cursor-pointer">
+            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+            <p class="text-gray-700 mb-2">Dosyayı buraya sürükleyin veya tıklayın</p>
+            <p class="text-sm text-gray-500">Excel dosyası (.xlsx, .xls, .csv)</p>
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden">
+        </div>
+
+        <div id="fileInfo" class="hidden mt-4 p-4 bg-blue-50 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-file-excel text-green-600 text-2xl"></i>
+                    <div>
+                        <p id="fileName" class="font-medium text-gray-900"></p>
+                        <p id="fileSize" class="text-sm text-gray-500"></p>
+                    </div>
+                </div>
+                <button onclick="clearFile()" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-center">
+            <button id="processBtn" onclick="processExcel()" disabled class="px-6 py-3 bg-bordo text-white rounded-lg hover:bg-bordo-dark transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
+                <i class="fas fa-cogs mr-2"></i>
+                Excel'i İşle ve Kaydet
+            </button>
+        </div>
+    </div>
+
+    <!-- Excel Format Info -->
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <h3 class="text-lg font-semibold text-blue-900 mb-3 flex items-center">
+            <i class="fas fa-info-circle mr-2"></i>
+            Excel Dosya Formatı
+        </h3>
+        <p class="text-blue-800 mb-3">Excel dosyanızın ilk satırı başlık olmalı ve aşağıdaki sütunları içermelidir:</p>
+        <div class="bg-white rounded-lg p-4">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left py-2 px-3 font-semibold text-gray-700">Sütun Adı</th>
+                        <th class="text-left py-2 px-3 font-semibold text-gray-700">Açıklama</th>
+                        <th class="text-left py-2 px-3 font-semibold text-gray-700">Zorunlu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b">
+                        <td class="py-2 px-3 font-mono text-gray-900">İsim</td>
+                        <td class="py-2 px-3 text-gray-600">Müşteri adı</td>
+                        <td class="py-2 px-3"><span class="text-red-600 font-semibold">Evet</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2 px-3 font-mono text-gray-900">Telefon</td>
+                        <td class="py-2 px-3 text-gray-600">Telefon numarası</td>
+                        <td class="py-2 px-3"><span class="text-red-600 font-semibold">Evet</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2 px-3 font-mono text-gray-900">Email</td>
+                        <td class="py-2 px-3 text-gray-600">E-posta adresi</td>
+                        <td class="py-2 px-3"><span class="text-gray-500">Hayır</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2 px-3 font-mono text-gray-900">Ülke</td>
+                        <td class="py-2 px-3 text-gray-600">Hedef ülke</td>
+                        <td class="py-2 px-3"><span class="text-gray-500">Hayır</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2 px-3 font-mono text-gray-900">Şehir</td>
+                        <td class="py-2 px-3 text-gray-600">Şehir bilgisi</td>
+                        <td class="py-2 px-3"><span class="text-gray-500">Hayır</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-2 px-3 font-mono text-gray-900">Notlar</td>
+                        <td class="py-2 px-3 text-gray-600">Ek notlar</td>
+                        <td class="py-2 px-3"><span class="text-gray-500">Hayır</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div id="previewSection" class="hidden mt-6 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-lg font-semibold text-gray-900">Önizleme</h3>
+            <p class="text-sm text-gray-600">Aşağıdaki veriler sisteme eklenecek</p>
+        </div>
+        <div class="overflow-x-auto max-h-96">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50 sticky top-0">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İsim</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefon</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ülke</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Şehir</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody" class="bg-white divide-y divide-gray-200">
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+            <p class="text-sm text-gray-600">
+                Toplam <span id="recordCount" class="font-semibold text-bordo">0</span> kayıt eklenecek
+            </p>
+            <button onclick="saveToLocalStorage()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-save mr-2"></i>
+                Kaydet
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SheetJS CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    let selectedFile = null;
+    let parsedData = [];
+
+    // Drop zone events
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-bordo', 'bg-red-50');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-bordo', 'bg-red-50');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-bordo', 'bg-red-50');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        const validTypes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
+            'text/csv'
+        ];
+        
+        if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls|csv)$/i)) {
+            alert('Lütfen geçerli bir Excel dosyası seçin (.xlsx, .xls, .csv)');
+            return;
+        }
+        
+        selectedFile = file;
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatBytes(file.size);
+        document.getElementById('fileInfo').classList.remove('hidden');
+        document.getElementById('processBtn').disabled = false;
+    }
+
+    function clearFile() {
+        selectedFile = null;
+        fileInput.value = '';
+        document.getElementById('fileInfo').classList.add('hidden');
+        document.getElementById('processBtn').disabled = true;
+        document.getElementById('previewSection').classList.add('hidden');
+    }
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function processExcel() {
+        if (!selectedFile) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                
+                if (jsonData.length === 0) {
+                    alert('Excel dosyası boş görünüyor.');
+                    return;
+                }
+                
+                parsedData = jsonData.map(row => ({
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                    name: row['İsim'] || row['Isim'] || row['isim'] || '',
+                    phone: row['Telefon'] || row['telefon'] || '',
+                    email: row['Email'] || row['email'] || '',
+                    country: row['Ülke'] || row['Ulke'] || row['ülke'] || row['ulke'] || '',
+                    city: row['Şehir'] || row['Sehir'] || row['şehir'] || row['sehir'] || '',
+                    notes: row['Notlar'] || row['notlar'] || '',
+                    createdDate: new Date().toISOString()
+                }));
+                
+                // Validate
+                const invalidRecords = parsedData.filter(d => !d.name || !d.phone);
+                if (invalidRecords.length > 0) {
+                    alert(`${invalidRecords.length} kayıtta eksik bilgi var (İsim ve Telefon zorunludur). Bu kayıtlar atlanacak.`);
+                    parsedData = parsedData.filter(d => d.name && d.phone);
+                }
+                
+                if (parsedData.length === 0) {
+                    alert('Geçerli kayıt bulunamadı.');
+                    return;
+                }
+                
+                showPreview();
+            } catch (error) {
+                console.error('Excel işleme hatası:', error);
+                alert('Excel dosyası işlenirken bir hata oluştu. Lütfen dosya formatını kontrol edin.');
+            }
+        };
+        reader.readAsArrayBuffer(selectedFile);
+    }
+
+    function showPreview() {
+        const tbody = document.getElementById('previewBody');
+        tbody.innerHTML = parsedData.map(data => `
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm text-gray-900">${data.name}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${data.phone}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${data.email || '-'}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${data.country || '-'}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${data.city || '-'}</td>
+            </tr>
+        `).join('');
+        
+        document.getElementById('recordCount').textContent = parsedData.length;
+        document.getElementById('previewSection').classList.remove('hidden');
+    }
+
+    function saveToLocalStorage() {
+        if (parsedData.length === 0) {
+            alert('Kaydedilecek veri yok.');
+            return;
+        }
+        
+        const existingData = localStorage.getItem('rawData');
+        const currentData = existingData ? JSON.parse(existingData) : [];
+        const mergedData = [...currentData, ...parsedData];
+        
+        localStorage.setItem('rawData', JSON.stringify(mergedData));
+        
+        alert(`${parsedData.length} kayıt başarıyla eklendi!`);
+        
+        // Redirect to existing data page
+        window.location.href = "{% url 'webapp:existing_data' %}";
+    }
+</script>
+{% endblock %}

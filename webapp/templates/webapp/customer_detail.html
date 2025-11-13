@@ -1,0 +1,563 @@
+{% extends 'webapp/base.html' %}
+{% load static %}
+
+{% block title %}Müşteri Detayı - Damla Vize CRM{% endblock %}
+
+{% block page_title %}Müşteri Detayı{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <a href="{% url 'webapp:existing_data' %}" class="flex items-center text-bordo hover:text-bordo-dark">
+        <i class="fas fa-arrow-left mr-2"></i>
+        <span>Mevcut Data'ya Dön</span>
+    </a>
+    <div class="flex items-center space-x-3">
+        <button id="editBtn" onclick="toggleEditMode()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-edit mr-2"></i>
+            Düzenle
+        </button>
+        <button id="saveBtn" onclick="saveCustomer()" class="hidden px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <i class="fas fa-save mr-2"></i>
+            Kaydet
+        </button>
+        <button id="cancelBtn" onclick="cancelEdit()" class="hidden px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-times mr-2"></i>
+            İptal
+        </button>
+        <button onclick="deleteCustomer()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            <i class="fas fa-trash mr-2"></i>
+            Sil
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Sol Panel - Müşteri Bilgileri -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Genel Bilgiler -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-user text-bordo mr-2"></i>
+                    Genel Bilgiler
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center space-x-6 mb-6 pb-6 border-b">
+                    <div class="flex-shrink-0 h-24 w-24 bg-bordo text-white rounded-full flex items-center justify-center font-bold text-4xl">
+                        <span id="avatarLetter"></span>
+                    </div>
+                    <div class="flex-1">
+                        <div id="nameDisplay" class="text-2xl font-bold text-gray-900 mb-1"></div>
+                        <div id="nameEdit" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">İsim *</label>
+                            <input type="text" id="nameInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                        </div>
+                        <p class="text-sm text-gray-500">Kayıt Tarihi: <span id="createdDate"></span></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Telefon -->
+                    <div>
+                        <div id="phoneDisplay">
+                            <label class="block text-sm font-medium text-gray-500 mb-2">Telefon</label>
+                            <div class="flex items-center text-gray-900">
+                                <i class="fas fa-phone text-bordo mr-3"></i>
+                                <span id="phoneText"></span>
+                            </div>
+                        </div>
+                        <div id="phoneEdit" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefon *</label>
+                            <input type="tel" id="phoneInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <div id="emailDisplay">
+                            <label class="block text-sm font-medium text-gray-500 mb-2">Email</label>
+                            <div class="flex items-center text-gray-900">
+                                <i class="fas fa-envelope text-bordo mr-3"></i>
+                                <span id="emailText"></span>
+                            </div>
+                        </div>
+                        <div id="emailEdit" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="emailInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                        </div>
+                    </div>
+
+                    <!-- Ülke -->
+                    <div>
+                        <div id="countryDisplay">
+                            <label class="block text-sm font-medium text-gray-500 mb-2">Ülke</label>
+                            <div class="flex items-center text-gray-900">
+                                <i class="fas fa-flag text-bordo mr-3"></i>
+                                <span id="countryText"></span>
+                            </div>
+                        </div>
+                        <div id="countryEdit" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ülke</label>
+                            <input type="text" id="countryInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                        </div>
+                    </div>
+
+                    <!-- Şehir -->
+                    <div>
+                        <div id="cityDisplay">
+                            <label class="block text-sm font-medium text-gray-500 mb-2">Şehir</label>
+                            <div class="flex items-center text-gray-900">
+                                <i class="fas fa-city text-bordo mr-3"></i>
+                                <span id="cityText"></span>
+                            </div>
+                        </div>
+                        <div id="cityEdit" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Şehir</label>
+                            <input type="text" id="cityInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notlar -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-sticky-note text-bordo mr-2"></i>
+                    Notlar
+                </h3>
+            </div>
+            <div class="p-6">
+                <div id="notesDisplay">
+                    <p id="notesText" class="text-gray-700 whitespace-pre-wrap"></p>
+                    <p id="noNotes" class="text-gray-400 italic hidden">Not eklenmemiş</p>
+                </div>
+                <div id="notesEdit" class="hidden">
+                    <textarea id="notesInput" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo" placeholder="Notlar..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sağ Panel - Hızlı İşlemler -->
+    <div class="space-y-6">
+        <!-- İstatistikler -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">Hızlı Bilgiler</h3>
+            </div>
+            <div class="p-4 space-y-4">
+                <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-calendar-plus text-blue-600"></i>
+                        <span class="text-sm font-medium text-gray-700">Kayıt Tarihi</span>
+                    </div>
+                    <span id="createdDateShort" class="text-sm font-semibold text-gray-900"></span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-clock text-purple-600"></i>
+                        <span class="text-sm font-medium text-gray-700">Son Güncelleme</span>
+                    </div>
+                    <span id="updatedDate" class="text-sm font-semibold text-gray-900"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hızlı İşlemler -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">Sonuçlandır</h3>
+            </div>
+            <div class="p-2">
+                <a href="/sale-form/?id={{ request.GET.id }}" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                    <i class="fas fa-shopping-cart text-blue-600"></i>
+                    <span class="text-sm font-medium text-gray-700">Satış</span>
+                </a>
+                <a href="javascript:void(0)" id="postponeLink" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                    <i class="fas fa-clock text-orange-600"></i>
+                    <span class="text-sm font-medium text-gray-700">Ertele</span>
+                </a>
+                <a href="javascript:void(0)" id="notInterestedLink" class="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                    <i class="fas fa-times-circle text-red-600"></i>
+                    <span class="text-sm font-medium text-gray-700">İstemiyor</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ertele Modal -->
+<div id="postponeModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Müşteriyi Ertele</h3>
+                <button onclick="closePostponeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hatırlanma Tarihi ve Saati</label>
+                    <input type="datetime-local" id="postponeDateTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Not (Opsiyonel)</label>
+                    <textarea id="postponeNote" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-bordo" placeholder="Neden erteleniyor..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closePostponeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors">
+                        İptal
+                    </button>
+                    <button onclick="postponeCustomer()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                        Ertele
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let customerId = null;
+    let customerData = null;
+    let originalData = null;
+    let isEditMode = false;
+
+    // URL'den müşteri ID'sini al
+    function getCustomerIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // Müşteri verilerini yükle
+    function loadCustomer() {
+        customerId = getCustomerIdFromUrl();
+        if (!customerId) {
+            alert('Müşteri bulunamadı.');
+            window.location.href = "{% url 'webapp:existing_data' %}";
+            return;
+        }
+
+        const rawData = localStorage.getItem('rawData');
+        const allData = rawData ? JSON.parse(rawData) : [];
+        customerData = allData.find(c => c.id === customerId);
+
+        if (!customerData) {
+            alert('Müşteri bulunamadı.');
+            window.location.href = "{% url 'webapp:existing_data' %}";
+            return;
+        }
+
+        originalData = JSON.parse(JSON.stringify(customerData));
+        displayCustomer();
+    }
+
+    // Müşteri bilgilerini göster
+    function displayCustomer() {
+        // Avatar
+        document.getElementById('avatarLetter').textContent = customerData.name ? customerData.name.charAt(0).toUpperCase() : '?';
+        
+        // İsim
+        document.getElementById('nameDisplay').textContent = customerData.name || '-';
+        document.getElementById('nameInput').value = customerData.name || '';
+        
+        // Tarihler
+        const createdDate = customerData.createdDate ? new Date(customerData.createdDate).toLocaleDateString('tr-TR') : '-';
+        document.getElementById('createdDate').textContent = createdDate;
+        document.getElementById('createdDateShort').textContent = createdDate;
+        
+        const updatedDate = customerData.updatedDate ? new Date(customerData.updatedDate).toLocaleDateString('tr-TR') : createdDate;
+        document.getElementById('updatedDate').textContent = updatedDate;
+        
+        // Telefon
+        document.getElementById('phoneText').textContent = customerData.phone || '-';
+        document.getElementById('phoneInput').value = customerData.phone || '';
+        
+        // Email
+        document.getElementById('emailText').textContent = customerData.email || '-';
+        document.getElementById('emailInput').value = customerData.email || '';
+        
+        // Ülke
+        document.getElementById('countryText').textContent = customerData.country || '-';
+        document.getElementById('countryInput').value = customerData.country || '';
+        
+        // Şehir
+        document.getElementById('cityText').textContent = customerData.city || '-';
+        document.getElementById('cityInput').value = customerData.city || '';
+        
+        // Notlar
+        if (customerData.notes) {
+            document.getElementById('notesText').textContent = customerData.notes;
+            document.getElementById('noNotes').classList.add('hidden');
+        } else {
+            document.getElementById('notesText').textContent = '';
+            document.getElementById('noNotes').classList.remove('hidden');
+        }
+        document.getElementById('notesInput').value = customerData.notes || '';
+    }
+
+    // Düzenleme modunu aç/kapat
+    function toggleEditMode() {
+        isEditMode = true;
+        
+        // Display elementlerini gizle, edit elementlerini göster
+        document.getElementById('nameDisplay').classList.add('hidden');
+        document.getElementById('nameEdit').classList.remove('hidden');
+        
+        document.getElementById('phoneDisplay').classList.add('hidden');
+        document.getElementById('phoneEdit').classList.remove('hidden');
+        
+        document.getElementById('emailDisplay').classList.add('hidden');
+        document.getElementById('emailEdit').classList.remove('hidden');
+        
+        document.getElementById('countryDisplay').classList.add('hidden');
+        document.getElementById('countryEdit').classList.remove('hidden');
+        
+        document.getElementById('cityDisplay').classList.add('hidden');
+        document.getElementById('cityEdit').classList.remove('hidden');
+        
+        document.getElementById('notesDisplay').classList.add('hidden');
+        document.getElementById('notesEdit').classList.remove('hidden');
+        
+        // Butonları değiştir
+        document.getElementById('editBtn').classList.add('hidden');
+        document.getElementById('saveBtn').classList.remove('hidden');
+        document.getElementById('cancelBtn').classList.remove('hidden');
+    }
+
+    // Düzenlemeyi iptal et
+    function cancelEdit() {
+        isEditMode = false;
+        customerData = JSON.parse(JSON.stringify(originalData));
+        displayCustomer();
+        exitEditMode();
+    }
+
+    // Düzenleme modundan çık
+    function exitEditMode() {
+        // Edit elementlerini gizle, display elementlerini göster
+        document.getElementById('nameDisplay').classList.remove('hidden');
+        document.getElementById('nameEdit').classList.add('hidden');
+        
+        document.getElementById('phoneDisplay').classList.remove('hidden');
+        document.getElementById('phoneEdit').classList.add('hidden');
+        
+        document.getElementById('emailDisplay').classList.remove('hidden');
+        document.getElementById('emailEdit').classList.add('hidden');
+        
+        document.getElementById('countryDisplay').classList.remove('hidden');
+        document.getElementById('countryEdit').classList.add('hidden');
+        
+        document.getElementById('cityDisplay').classList.remove('hidden');
+        document.getElementById('cityEdit').classList.add('hidden');
+        
+        document.getElementById('notesDisplay').classList.remove('hidden');
+        document.getElementById('notesEdit').classList.add('hidden');
+        
+        // Butonları değiştir
+        document.getElementById('editBtn').classList.remove('hidden');
+        document.getElementById('saveBtn').classList.add('hidden');
+        document.getElementById('cancelBtn').classList.add('hidden');
+    }
+
+    // Müşteri bilgilerini kaydet
+    function saveCustomer() {
+        // Verileri al
+        const name = document.getElementById('nameInput').value.trim();
+        const phone = document.getElementById('phoneInput').value.trim();
+        const email = document.getElementById('emailInput').value.trim();
+        const country = document.getElementById('countryInput').value.trim();
+        const city = document.getElementById('cityInput').value.trim();
+        const notes = document.getElementById('notesInput').value.trim();
+        
+        // Validasyon
+        if (!name) {
+            alert('İsim alanı zorunludur.');
+            return;
+        }
+        if (!phone) {
+            alert('Telefon alanı zorunludur.');
+            return;
+        }
+        
+        // Güncelle
+        customerData.name = name;
+        customerData.phone = phone;
+        customerData.email = email;
+        customerData.country = country;
+        customerData.city = city;
+        customerData.notes = notes;
+        customerData.updatedDate = new Date().toISOString();
+        
+        // LocalStorage'a kaydet
+        const rawData = localStorage.getItem('rawData');
+        const allData = rawData ? JSON.parse(rawData) : [];
+        const index = allData.findIndex(c => c.id === customerId);
+        
+        if (index !== -1) {
+            allData[index] = customerData;
+            localStorage.setItem('rawData', JSON.stringify(allData));
+            originalData = JSON.parse(JSON.stringify(customerData));
+            displayCustomer();
+            exitEditMode();
+            alert('Müşteri bilgileri güncellendi.');
+        }
+    }
+
+    // Müşteri sil
+    function deleteCustomer() {
+        if (!confirm('Bu müşteriyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+            return;
+        }
+        
+        const rawData = localStorage.getItem('rawData');
+        const allData = rawData ? JSON.parse(rawData) : [];
+        const filteredData = allData.filter(c => c.id !== customerId);
+        localStorage.setItem('rawData', JSON.stringify(filteredData));
+        
+        alert('Müşteri silindi.');
+        window.location.href = "{% url 'webapp:existing_data' %}";
+    }
+
+    // Satış yapılan müşterilere taşı
+    function moveToCustomers() {
+        window.location.href = "/sale-form/?id=" + customerId;
+    }
+
+    // Ertele modal'ını göster
+    function showPostponeModal() {
+        console.log('showPostponeModal çağrıldı'); // Debug
+        const modal = document.getElementById('postponeModal');
+        console.log('Modal elementi:', modal); // Debug
+        
+        if (!modal) {
+            console.error('postponeModal bulunamadı!'); // Debug
+            alert('Modal bulunamadı. Sayfayı yenileyin.');
+            return;
+        }
+        
+        modal.classList.remove('hidden');
+        console.log('Modal gösterildi'); // Debug
+        
+        // Bugünden itibaren en erken yarın aynı saat
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dateTimeLocal = tomorrow.toISOString().slice(0, 16);
+        
+        const dateTimeInput = document.getElementById('postponeDateTime');
+        console.log('DateTime input:', dateTimeInput); // Debug
+        if (dateTimeInput) {
+            dateTimeInput.value = dateTimeLocal;
+            console.log('DateTime ayarlandı:', dateTimeLocal); // Debug
+        }
+    }
+
+    // Ertele modal'ını kapat
+    function closePostponeModal() {
+        document.getElementById('postponeModal').classList.add('hidden');
+    }
+
+    // Müşteriyi ertele
+    function postponeCustomer() {
+        const postponeDateTime = document.getElementById('postponeDateTime').value;
+        const postponeNote = document.getElementById('postponeNote').value.trim();
+        
+        if (!postponeDateTime) {
+            alert('Tarih ve saat seçiniz.');
+            return;
+        }
+        
+        // postponedCustomers listesine ekle
+        const postponedData = localStorage.getItem('postponedCustomers');
+        const allPostponed = postponedData ? JSON.parse(postponedData) : [];
+        
+        const postponedCustomer = {
+            ...customerData,
+            postponeDateTime: postponeDateTime,
+            postponeNote: postponeNote,
+            postponedAt: new Date().toISOString()
+        };
+        
+        allPostponed.push(postponedCustomer);
+        localStorage.setItem('postponedCustomers', JSON.stringify(allPostponed));
+        
+        // rawData'dan çıkar
+        const rawData = localStorage.getItem('rawData');
+        const allRawData = rawData ? JSON.parse(rawData) : [];
+        const filteredRawData = allRawData.filter(c => c.id !== customerId);
+        localStorage.setItem('rawData', JSON.stringify(filteredRawData));
+        
+        const postponeDate = new Date(postponeDateTime);
+        alert(`Müşteri ${postponeDate.toLocaleDateString('tr-TR')} ${postponeDate.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'})}'ye ertelendi.`);
+        closePostponeModal();
+        window.location.href = "{% url 'webapp:existing_data' %}";
+    }
+
+    // İstemeyen müşterilere taşı
+    function moveToNotInterested() {
+        if (!confirm('Bu müşteriyi "İstemeyen Müşteriler" listesine taşımak istiyor musunuz?')) {
+            return;
+        }
+        
+        // notInterestedCustomers listesine ekle
+        const notInterestedData = localStorage.getItem('notInterestedCustomers');
+        const allNotInterested = notInterestedData ? JSON.parse(notInterestedData) : [];
+        
+        const notInterestedCustomer = {
+            ...customerData,
+            notInterestedAt: new Date().toISOString()
+        };
+        
+        allNotInterested.push(notInterestedCustomer);
+        localStorage.setItem('notInterestedCustomers', JSON.stringify(allNotInterested));
+        
+        // rawData'dan çıkar
+        const rawData = localStorage.getItem('rawData');
+        const allRawData = rawData ? JSON.parse(rawData) : [];
+        const filteredRawData = allRawData.filter(c => c.id !== customerId);
+        localStorage.setItem('rawData', JSON.stringify(filteredRawData));
+        
+        alert('Müşteri "İstemeyen Müşteriler" listesine taşındı.');
+        window.location.href = "{% url 'webapp:existing_data' %}";
+    }
+
+    // Sayfa yüklendiğinde
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('customer_detail.html JavaScript yüklendi');
+        loadCustomer();
+        
+        // Ertele link'ine event listener ekle
+        const postponeLink = document.getElementById('postponeLink');
+        if (postponeLink) {
+            postponeLink.onclick = function(e) {
+                e.preventDefault();
+                console.log('Ertele linkine tıklandı!');
+                const modal = document.getElementById('postponeModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    // Yarın aynı saat
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const dateTimeLocal = tomorrow.toISOString().slice(0, 16);
+                    document.getElementById('postponeDateTime').value = dateTimeLocal;
+                } else {
+                    alert('Modal bulunamadı!');
+                }
+            };
+        }
+        
+        // İstemiyor link'ine event listener ekle
+        const notInterestedLink = document.getElementById('notInterestedLink');
+        if (notInterestedLink) {
+            notInterestedLink.onclick = function(e) {
+                e.preventDefault();
+                moveToNotInterested();
+            };
+        }
+    });
+</script>
+{% endblock %}
