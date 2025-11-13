@@ -6,10 +6,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
-    startCommand: gunicorn damla_crm.wsgi:application
-    postDeployCommand: |
-      python manage.py migrate
-      python manage.py init_default_users
+    startCommand: sh -c "python manage.py migrate && python manage.py init_default_users && gunicorn damla_crm.wsgi:application"
     envVars:
       - key: SECRET_KEY
         generateValue: true
