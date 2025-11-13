@@ -104,6 +104,10 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # CSRF and CORS basics for cloud
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if os.environ.get('CSRF_TRUSTED_ORIGINS') else []
+# If CSRF_TRUSTED_ORIGINS is missing or misconfigured (e.g. contains unresolved variables),
+# derive it from ALLOWED_HOSTS by prefixing with https://, which works for Render defaults.
+if not CSRF_TRUSTED_ORIGINS or any(v.strip().startswith('$') for v in CSRF_TRUSTED_ORIGINS):
+    CSRF_TRUSTED_ORIGINS = [f"https://{h.strip()}" for h in ALLOWED_HOSTS if h and h.strip() != '*']
 
 # DRF basic settings
 REST_FRAMEWORK = {
