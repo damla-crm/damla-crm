@@ -12,6 +12,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here'
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
+# If ALLOWED_HOSTS contains unresolved placeholders (e.g. ${RENDER_EXTERNAL_HOSTNAME}),
+# try to resolve from RENDER_EXTERNAL_HOSTNAME; else allow all to pass health checks.
+if any(h.strip().startswith('$') or '{' in h for h in ALLOWED_HOSTS):
+    render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+    ALLOWED_HOSTS = [render_host] if render_host else ['*']
 
 # Application definition
 INSTALLED_APPS = [
