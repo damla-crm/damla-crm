@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Damla Vize CRM{% endblock %}</title>
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#A18E62">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -25,6 +27,13 @@
             font-family: 'Inter', sans-serif;
         }
     </style>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register("{% static 'service-worker.js' %}").catch(function(e){console.warn('SW reg failed', e)});
+            });
+        }
+    </script>
 </head>
 <body>
     {% if not request.user.is_authenticated %}

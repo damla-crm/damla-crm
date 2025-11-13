@@ -1,0 +1,21 @@
+{
+  "name": "Damla Vize CRM",
+  "short_name": "Damla CRM",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#A18E62",
+  "icons": [
+    {
+      "src": "/static/images/transparent-Photoroom.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/images/transparent-Photoroom.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
