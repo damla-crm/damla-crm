@@ -19,7 +19,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('dashboard')
+            return redirect('webapp:dashboard')
     
     return render(request, 'webapp/login.html')
 
@@ -27,7 +27,7 @@ def logout_view(request):
     from django.contrib.auth import logout
     
     logout(request)
-    return redirect('login')
+    return redirect('webapp:login')
 
 def calendar_view(request):
     return render(request, 'webapp/calendar.html')
