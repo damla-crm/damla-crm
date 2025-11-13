@@ -102,10 +102,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Login settings
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGIN_URL = 'login'
-LOGOUT_REDIRECT_URL = 'login'
+# Login settings (use namespaced URLs)
+LOGIN_REDIRECT_URL = 'webapp:dashboard'
+LOGIN_URL = 'webapp:login'
+LOGOUT_REDIRECT_URL = 'webapp:login'
 
 # CSRF and CORS basics for cloud
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if os.environ.get('CSRF_TRUSTED_ORIGINS') else []
