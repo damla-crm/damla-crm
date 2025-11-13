@@ -53,7 +53,7 @@
                             <i class="fas fa-user text-white"></i>
                         </div>
                         <div class="leading-tight hidden sm:block">
-                            <div class="text-sm" id="currentUserName">Ramazan</div>
+                            <div class="text-sm" id="currentUserName">{{ request.user.username|capfirst }}</div>
                             <div class="text-xs opacity-90">Yönetici</div>
                         </div>
                         <button onclick="logout()" class="ml-3 text-white hover:text-gray-200" title="Çıkış Yap">
@@ -541,13 +541,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateNotificationBadge();
             
-            // Kullanıcı adını göster
-            const currentUser = localStorage.getItem('currentUser');
-            if (currentUser) {
-                const userNameElement = document.getElementById('currentUserName');
-                if (userNameElement) {
-                    userNameElement.textContent = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
-                }
+            // Kullanıcı adını göster (Django oturumundan)
+            const djangoUser = "{{ request.user.username|escapejs }}";
+            const userNameElement = document.getElementById('currentUserName');
+            if (userNameElement && djangoUser) {
+                userNameElement.textContent = djangoUser.charAt(0).toUpperCase() + djangoUser.slice(1);
             }
         });
     </script>
